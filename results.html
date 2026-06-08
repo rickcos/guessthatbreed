@@ -88,7 +88,7 @@
 
 <div class="results-container">
     <h1>All Guesses for Daisy 🐾</h1>
-    <div class="subtitle">See what everyone thinks Daisy's mix is!</div>
+    <div class="subtitle" id="status-message">Loading results from the cloud...</div>
 
     <table>
         <thead>
@@ -104,36 +104,64 @@
     <a href="index.html" class="btn-back">← Back to Guessing Game</a>
 </div>
 
-<script>
-    window.onload = function() {
-        const tableBody = document.getElementById('leaderboard-body');
-        
-        // Grab data saved from the form page
-        const allGuesses = JSON.parse(localStorage.getItem('daisy_guesses')) || [];
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
+    import { getFirestore, collection, getDocs, query, orderBy } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 
-        if (allGuesses.length === 0) {
-            tableBody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#7f8c8d; padding: 20px;">No guesses submitted yet!</td></tr>`;
-            return;
-        }
-
-        // Loop through all data and append rows
-        let htmlRows = '';
-        allGuesses.forEach(g => {
-            htmlRows += `<tr>
-                <td class="player-name">${escapeHTML(g.name)}</td>
-                <td>${escapeHTML(g.mix)}</td>
-            </tr>`;
-        });
-
-        tableBody.innerHTML = htmlRows;
+    // ⚠️ REPLACE THIS ENTIRE CONFIG OBJECT WITH YOUR COPIED CONFIG FROM FIREBASE
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
     };
 
-    // Helper to prevent malicious text styling injection
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function loadResultsFromCloud() {
+        const tableBody = document.getElementById('leaderboard-body');
+        const statusMessage = document.getElementById('status-message');
+        
+        try {
+            // Request guesses sorted by when they were made (oldest first)
+            const q = query(collection(db, "guesses"), orderBy("timestamp", "asc"));
+            const querySnapshot = await getDocs(q);
+            
+            if (querySnapshot.empty) {
+                tableBody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#7f8c8d; padding: 20px;">No guesses submitted yet! Be the first!</td></tr>`;
+                statusMessage.innerText = "See what everyone thinks Daisy's mix is!";
+                return;
+            }
+
+            let htmlRows = '';
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                htmlRows += `<tr>
+                    <td class="player-name">${escapeHTML(data.name || 'Anonymous')}</td>
+                    <td>${escapeHTML(data.mix || '')}</td>
+                </tr>`;
+            });
+
+            tableBody.innerHTML = htmlRows;
+            statusMessage.innerText = "See what everyone thinks Daisy's mix is!";
+        } catch (error) {
+            console.error("Error reading cloud data: ", error);
+            statusMessage.innerText = "Error loading data. Make sure database Test Mode is active.";
+            tableBody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#e74c3c; padding: 20px;">Failed to synchronize database.</td></tr>`;
+        }
+    }
+
     function escapeHTML(str) {
         return str.replace(/[&<>'"]/g, 
             tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
         );
     }
+
+    // Execute database retrieval immediately when script finishes importing
+    loadResultsFromCloud();
 </script>
 
 </body>
