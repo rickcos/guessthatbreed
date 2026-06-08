@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daisy's Breed Mix - All Guesses</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .results-container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+            color: #333;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .btn-back {
+            display: block;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="results-container">
+    <h1>All Guesses for Daisy 🐾</h1>
+    <div class="subtitle">See what everyone thinks Daisy's mix is!</div>
+
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 30%;">Name</th>
+                <th style="width: 70%;">Guessed Mix</th>
+            </tr>
+        </thead>
+        <tbody id="leaderboard-body">
+            </tbody>
+    </table>
+
+    <a href="index.html" class="btn-back">← Back to Guessing Game</a>
+</div>
+
+<script>
+    window.onload = function() {
+        const tableBody = document.getElementById('leaderboard-body');
+        
+        // Grab data saved from the form page
+        const allGuesses = JSON.parse(localStorage.getItem('daisy_guesses')) || [];
+
+        if (allGuesses.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#7f8c8d; padding: 20px;">No guesses submitted yet!</td></tr>`;
+            return;
+        }
+
+        // Loop through all data and append rows
+        let htmlRows = '';
+        allGuesses.forEach(g => {
+            htmlRows += `<tr>
+                <td class="player-name">${escapeHTML(g.name)}</td>
+                <td>${escapeHTML(g.mix)}</td>
+            </tr>`;
+        });
+
+        tableBody.innerHTML = htmlRows;
+    };
+
+    // Helper to prevent malicious text styling injection
+    function escapeHTML(str) {
+        return str.replace(/[&<>'"]/g, 
+            tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+        );
+    }
+</script>
+
+</body>
+</html>
