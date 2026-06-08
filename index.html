@@ -146,8 +146,7 @@
         </div>
 
         <div id="breed-rows-container">
-            <!-- Dynamic rows land here -->
-        </div>
+            </div>
 
         <div class="actions">
             <button type="button" class="btn-main" id="add-breed-btn">Add Breed</button>
@@ -157,7 +156,7 @@
         </div>
 
         <button type="submit" class="btn-main btn-submit" id="submit-btn" style="width: 100%; margin-top: 20px;" disabled>
-            Submit Guess & View Results
+            Submit Guess & See Results
         </button>
     </form>
 </div>
@@ -219,69 +218,12 @@
             }
         });
 
-        // 1. Retrieve existing guesses from localStorage
         const allGuesses = JSON.parse(localStorage.getItem('daisy_guesses')) || [];
-        
-        // 2. Add the new guess
         allGuesses.push({ name, mix: breedMix.join(', ') });
-        
-        // 3. Save back to localStorage
         localStorage.setItem('daisy_guesses', JSON.stringify(allGuesses));
 
-        // 4. Trigger the results popup BEFORE resetting the main form view
-        openGuessesPopup(allGuesses);
-
-        // 5. Reset the form clean for the next player
-        document.getElementById('player-name').value = '';
-        container.innerHTML = '';
-        createRow();
-        createRow();
-    }
-
-    function openGuessesPopup(allGuesses) {
-        const popup = window.open("", "DaisyGuesses", "width=600,height=600,scrollbars=yes");
-        
-        if (!popup) {
-            alert("Your guess was saved, but the results popup was blocked! Please allow popups for this page to view everyone's guesses.");
-            return;
-        }
-
-        let tableRows = '';
-        allGuesses.forEach(g => {
-            tableRows += `<tr>
-                <td style="padding:12px; border-bottom:1px solid #eee; font-weight:bold; color:#2c3e50;">${g.name}</td>
-                <td style="padding:12px; border-bottom:1px solid #eee; color:#555;">${g.mix}</td>
-            </tr>`;
-        });
-
-        popup.document.write(`
-            <html>
-            <head>
-                <title>Daisy's Breed Mix - All Guesses</title>
-                <style>
-                    body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; background-color: #f9fbfb; color: #333; }
-                    h2 { color: #2c3e50; text-align: center; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-                    table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-                    th { background-color: #3498db; color: white; padding: 12px; text-align: left; }
-                </style>
-            </head>
-            <body>
-                <h2>All Guesses for Daisy 🐾</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 30%;">Name</th>
-                            <th style="width: 70%;">Guessed Mix</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                    </tbody>
-                </table>
-            </body>
-            </html>
-        `);
-        popup.document.close();
+        // Redirect seamlessly to the standalone results page
+        window.location.href = 'results.html';
     }
 
     // Initialize
