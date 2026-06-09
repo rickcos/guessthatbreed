@@ -27,7 +27,22 @@
         h1 {
             text-align: center;
             color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* STYLING FOR DAISY'S PHOTO */
+        .dog-image-container {
+            display: flex;
+            justify-content: center;
             margin-bottom: 25px;
+        }
+
+        .dog-image {
+            width: 100%;
+            max-width: 400px; /* Limits size on desktop */
+            height: auto;
+            border-radius: 12px; /* Gives nice rounded corners */
+            box-shadow: 0 6px 18px rgba(0,0,0,0.1); /* Adds a soft drop shadow */
         }
 
         .name-section {
@@ -133,6 +148,10 @@
 <div class="game-container">
     <h1>Guess Daisy's Breed Mix! 🐶</h1>
     
+    <div class="dog-image-container">
+        <img src="daisy.jpg" alt="Daisy the dog" class="dog-image">
+    </div>
+
     <form id="guess-form">
         
         <div class="name-section">
@@ -163,21 +182,21 @@
 
 <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js';
-    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
+    import { initializeFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js';
 
-    // ⚠️ REPLACE THIS ENTIRE CONFIG OBJECT WITH YOUR COPIED CONFIG FROM FIREBASE
     const firebaseConfig = {
-  apiKey: "AIzaSyCceXtmtPa3jTRFCiMSyL5dqDbymPcUk6k",
-  authDomain: "daisy-guessing-game.firebaseapp.com",
-  projectId: "daisy-guessing-game",
-  storageBucket: "daisy-guessing-game.firebasestorage.app",
-  messagingSenderId: "184137201955",
-  appId: "1:184137201955:web:f2a632b55540ac25aab496"
-};
+        apiKey: "AIzaSyCceXtmtPa3jTRFCiMSyL5dqDbymPcUk6k",
+        authDomain: "daisy-guessing-game.firebaseapp.com",
+        projectId: "daisy-guessing-game",
+        storageBucket: "daisy-guessing-game.firebasestorage.app",
+        messagingSenderId: "184137201955",
+        appId: "1:184137201955:web:f2a632b55540ac25aab496"
+    };
 
-    // Initialize Firebase and Database
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = initializeFirestore(app, {
+        experimentalForceLongPolling: true
+    });
 
     const container = document.getElementById('breed-rows-container');
     const addBtn = document.getElementById('add-breed-btn');
@@ -197,8 +216,8 @@
         const row = document.createElement('div');
         row.className = 'breed-row';
         row.innerHTML = `
-            <div class="col-breed"><input type="text" placeholder="e.g., Golden Retriever" required></div>
-            <div class="col-percent"><select class="percent-dropdown">${generatePercentOptions()}</select></div>
+            <div class="col-breed"><input type="text" name="dog-breed" placeholder="e.g., Golden Retriever" required></div>
+            <div class="col-percent"><select name="dog-percentage" class="percent-dropdown">${generatePercentOptions()}</select></div>
             <button type="button" class="btn-delete" title="Remove breed">×</button>
         `;
         row.querySelector('.percent-dropdown').addEventListener('change', calculateTotal);
@@ -242,28 +261,24 @@
         });
 
         try {
-            // Push the data safely up to your cloud database collection named "guesses"
             await addDoc(collection(db, "guesses"), {
                 name: name,
                 mix: breedMix.join(', '),
-                timestamp: new Date() // handy for chronological sorting later!
+                timestamp: new Date()
             });
 
-            // Redirect seamlessly to the standalone results page
             window.location.href = 'results.html';
         } catch (error) {
             console.error("Error saving guess: ", error);
-            alert("Oops! Something went wrong saving your guess. Check console errors.");
+            alert("Oops! Something went wrong saving your guess.");
             submitBtn.disabled = false;
             submitBtn.innerText = "Submit Guess & See Results";
         }
     }
 
-    // Attach modular events
     addBtn.addEventListener('click', createRow);
     guessForm.addEventListener('submit', handleGuessSubmit);
     
-    // Start game canvas
     createRow();
     createRow();
 </script>
